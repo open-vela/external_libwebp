@@ -13,9 +13,6 @@
 
 set -e
 
-# Set this variable based on the desired minimum deployment target.
-readonly IOS_MIN_VERSION=6.0
-
 # Extract the latest SDK version from the final field of the form: iphoneosX.Y
 readonly SDK=$(xcodebuild -showsdks \
   | grep iphoneos | sort | tail -n 1 | awk '{print substr($NF, 9)}'
@@ -121,7 +118,7 @@ for PLATFORM in ${PLATFORMS}; do
   SDKROOT="${PLATFORMSROOT}/"
   SDKROOT+="${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDK}.sdk/"
   CFLAGS="-arch ${ARCH2:-${ARCH}} -pipe -isysroot ${SDKROOT} -O3 -DNDEBUG"
-  CFLAGS+=" -miphoneos-version-min=${IOS_MIN_VERSION} ${EXTRA_CFLAGS}"
+  CFLAGS+=" -miphoneos-version-min=6.0 ${EXTRA_CFLAGS}"
 
   set -x
   export PATH="${DEVROOT}/usr/bin:${OLDPATH}"
