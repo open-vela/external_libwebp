@@ -314,11 +314,8 @@ int main(int argc, const char* argv[]) {
           frame.use_argb = 1;
           if (!WebPPictureAlloc(&frame)) goto End;
           GIFClearPic(&frame, NULL);
-          if (!(WebPPictureCopy(&frame, &curr_canvas) &&
-                WebPPictureCopy(&frame, &prev_canvas))) {
-            fprintf(stderr, "Error allocating canvas.\n");
-            goto End;
-          }
+          WebPPictureCopy(&frame, &curr_canvas);
+          WebPPictureCopy(&frame, &prev_canvas);
 
           // Background color.
           GIFGetBackgroundColor(gif->SColorMap, gif->SBackGroundColor,
