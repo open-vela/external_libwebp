@@ -117,8 +117,6 @@ set(includedir "\$\{prefix\}/include")
 set(PTHREAD_LIBS ${CMAKE_THREAD_LIBS_INIT})
 set(INSTALLED_LIBRARIES)
 
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-
 # ##############################################################################
 # Android only.
 if(ANDROID)
@@ -616,13 +614,6 @@ if(WEBP_BUILD_EXTRAS)
   parse_makefile_am(${EXTRAS_MAKEFILE} "WEBP_QUALITY_SRCS" "webp_quality")
   parse_makefile_am(${EXTRAS_MAKEFILE} "VWEBP_SDL_SRCS" "vwebp_sdl")
 
-  # libextras
-  add_library(extras STATIC ${WEBP_EXTRAS_SRCS})
-  target_include_directories(extras
-                             PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-                             ${CMAKE_CURRENT_SOURCE_DIR}
-                             ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
   # get_disto
   add_executable(get_disto ${GET_DISTO_SRCS})
   target_link_libraries(get_disto imagedec)
@@ -631,8 +622,8 @@ if(WEBP_BUILD_EXTRAS)
                                      ${CMAKE_CURRENT_BINARY_DIR}/src)
 
   # webp_quality
-  add_executable(webp_quality ${WEBP_QUALITY_SRCS})
-  target_link_libraries(webp_quality exampleutil imagedec extras)
+  add_executable(webp_quality ${WEBP_QUALITY_SRCS} ${WEBP_EXTRAS_SRCS})
+  target_link_libraries(webp_quality exampleutil imagedec)
   target_include_directories(webp_quality
                              PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
                                      ${CMAKE_CURRENT_BINARY_DIR})
