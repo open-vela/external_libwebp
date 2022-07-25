@@ -526,19 +526,18 @@ endif()
 
 if(WEBP_BUILD_LIBWEBPMUX)
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/src/mux "WEBP_MUX_SRCS" "")
-  add_library(libwebpmux ${WEBP_MUX_SRCS})
-  target_link_libraries(libwebpmux webp)
-  target_include_directories(libwebpmux
+  add_library(webpmux ${WEBP_MUX_SRCS})
+  target_link_libraries(webpmux webp)
+  target_include_directories(webpmux
                              PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                      ${CMAKE_CURRENT_SOURCE_DIR})
-  set_version(mux/Makefile.am libwebpmux webpmux)
-  set_target_properties(libwebpmux
+  set_version(mux/Makefile.am webpmux webpmux)
+  set_target_properties(webpmux
                         PROPERTIES PUBLIC_HEADER
                                    "${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux.h;\
 ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h;\
 ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h;")
-  set_target_properties(libwebpmux PROPERTIES OUTPUT_NAME webpmux)
-  list(APPEND INSTALLED_LIBRARIES libwebpmux)
+  list(APPEND INSTALLED_LIBRARIES webpmux)
   configure_pkg_config("src/mux/libwebpmux.pc")
 endif()
 
@@ -552,7 +551,7 @@ if(WEBP_BUILD_GIF2WEBP)
                         exampleutil
                         imageioutil
                         webp
-                        libwebpmux
+                        webpmux
                         ${WEBP_DEP_GIF_LIBRARIES})
   target_include_directories(gif2webp PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
   install(TARGETS gif2webp RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -569,7 +568,7 @@ if(WEBP_BUILD_IMG2WEBP)
                         imagedec
                         imageioutil
                         webp
-                        libwebpmux)
+                        webpmux)
   target_include_directories(img2webp PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
   install(TARGETS img2webp RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
@@ -619,10 +618,12 @@ if(WEBP_BUILD_WEBPMUX)
   # webpmux
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/examples "WEBPMUX_SRCS"
                     "webpmux")
-  add_executable(webpmux ${WEBPMUX_SRCS})
-  target_link_libraries(webpmux exampleutil imageioutil libwebpmux webp)
-  target_include_directories(webpmux PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
-  install(TARGETS webpmux RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  add_executable(webpmux_app ${WEBPMUX_SRCS})
+  set_target_properties(webpmux_app PROPERTIES OUTPUT_NAME webpmux)
+  target_link_libraries(webpmux_app exampleutil imageioutil webpmux webp)
+  target_include_directories(webpmux_app
+                             PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
+  install(TARGETS webpmux_app RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 if(WEBP_BUILD_EXTRAS)
@@ -754,10 +755,6 @@ write_basic_package_version_file(
 
 # Create the Config file.
 include(CMakePackageConfigHelpers)
-# Fix libwebpmux reference. The target name libwebpmux is used for
-# compatibility purposes, but the library mentioned in WebPConfig.cmake should
-# be the unprefixed version.
-list(TRANSFORM INSTALLED_LIBRARIES REPLACE "libwebpmux" "webpmux")
 configure_package_config_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/WebPConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/WebPConfig.cmake
