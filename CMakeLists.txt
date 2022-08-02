@@ -308,7 +308,6 @@ set_target_properties(
   sharpyuv
   PROPERTIES PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/sharpyuv/sharpyuv.h;\
 ${CMAKE_CURRENT_SOURCE_DIR}/sharpyuv/sharpyuv_csp.h")
-configure_pkg_config("sharpyuv/libsharpyuv.pc")
 install(TARGETS sharpyuv
         EXPORT ${PROJECT_NAME}Targets
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/webp/sharpyuv
