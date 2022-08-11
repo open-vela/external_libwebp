@@ -1140,10 +1140,9 @@ int main(int argc, const char* argv[]) {
       }
 
       picture.use_argb = 1;
-      if (!ReadWebP(
-              memory_writer.mem, memory_writer.size, &picture,
-              /*keep_alpha=*/WebPPictureHasTransparency(&original_picture),
-              /*metadata=*/NULL)) {
+      if (!ReadWebP(memory_writer.mem, memory_writer.size, &picture,
+                    /*keep_alpha=*/WebPPictureHasTransparency(&picture),
+                    /*metadata=*/NULL)) {
         fprintf(stderr, "Error! Cannot decode encoded WebP bitstream\n");
         fprintf(stderr, "Error code: %d (%s)\n", picture.error_code,
                 kErrorMessages[picture.error_code]);
