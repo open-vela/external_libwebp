@@ -12,6 +12,8 @@
 #ifndef WEBP_SHARPYUV_SHARPYUV_H_
 #define WEBP_SHARPYUV_SHARPYUV_H_
 
+#include <inttypes.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

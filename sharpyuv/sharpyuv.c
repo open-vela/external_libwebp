@@ -15,7 +15,7 @@
 
 #include <assert.h>
 #include <limits.h>
-#include <stddef.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -414,22 +414,6 @@ static int DoSharpArgbToYuv(const uint8_t* r_ptr, const uint8_t* g_ptr,
 }
 #undef SAFE_ALLOC
 
-#if defined(WEBP_USE_THREAD) && !defined(_WIN32)
-#include <pthread.h>  // NOLINT
-
-#define LOCK_ACCESS \
-    static pthread_mutex_t sharpyuv_lock = PTHREAD_MUTEX_INITIALIZER; \
-    if (pthread_mutex_lock(&sharpyuv_lock)) return
-#define UNLOCK_ACCESS_AND_RETURN                  \
-    do {                                          \
-      (void)pthread_mutex_unlock(&sharpyuv_lock); \
-      return;                                     \
-    } while (0)
-#else  // !(defined(WEBP_USE_THREAD) && !defined(_WIN32))
-#define LOCK_ACCESS do {} while (0)
-#define UNLOCK_ACCESS_AND_RETURN return
-#endif  // defined(WEBP_USE_THREAD) && !defined(_WIN32)
-
 // Hidden exported init function.
 // By default SharpYuvConvert calls it with NULL. If needed, users can declare
 // it as extern and call it with a VP8CPUInfo function.
@@ -437,21 +421,17 @@ SHARPYUV_EXTERN void SharpYuvInit(VP8CPUInfo cpu_info_func);
 void SharpYuvInit(VP8CPUInfo cpu_info_func) {
   static volatile VP8CPUInfo sharpyuv_last_cpuinfo_used =
       (VP8CPUInfo)&sharpyuv_last_cpuinfo_used;
-  LOCK_ACCESS;
-  {
-    const int initialized =
+  const int initialized =
       (sharpyuv_last_cpuinfo_used != (VP8CPUInfo)&sharpyuv_last_cpuinfo_used);
-    if (cpu_info_func == NULL && initialized) UNLOCK_ACCESS_AND_RETURN;
-    if (sharpyuv_last_cpuinfo_used == cpu_info_func) UNLOCK_ACCESS_AND_RETURN;
+  if (cpu_info_func == NULL && initialized) return;
+  if (sharpyuv_last_cpuinfo_used == cpu_info_func) return;
 
-    SharpYuvInitDsp(cpu_info_func);
-    if (!initialized) {
-      SharpYuvInitGammaTables();
-    }
-
-    sharpyuv_last_cpuinfo_used = cpu_info_func;
+  SharpYuvInitDsp(cpu_info_func);
+  if (!initialized) {
+    SharpYuvInitGammaTables();
   }
-  UNLOCK_ACCESS_AND_RETURN;
+
+  sharpyuv_last_cpuinfo_used = cpu_info_func;
 }
 
 int SharpYuvConvert(const void* r_ptr, const void* g_ptr,
