@@ -1,5 +1,3 @@
-# Ignore this file during non-NDK builds.
-ifdef NDK_ROOT
 LOCAL_PATH := $(call my-dir)
 
 WEBP_CFLAGS := -Wall -DANDROID -DHAVE_MALLOC_H -DHAVE_PTHREAD -DWEBP_USE_THREAD
@@ -291,4 +289,3 @@ include $(WEBP_SRC_PATH)/examples/Android.mk
 ifeq ($(USE_CPUFEATURES),yes)
   $(call import-module,android/cpufeatures)
 endif
-endif  # NDK_ROOT
