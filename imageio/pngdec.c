@@ -235,7 +235,7 @@ int ReadPNG(const uint8_t* const data, size_t data_size,
   volatile png_infop end_info = NULL;
   PNGReadContext context = { NULL, 0, 0 };
   int color_type, bit_depth, interlaced;
-  int num_channels;
+  int has_alpha;
   int num_passes;
   int p;
   volatile int ok = 0;
@@ -293,6 +293,9 @@ int ReadPNG(const uint8_t* const data, size_t data_size,
   }
   if (png_get_valid(png, info, PNG_INFO_tRNS)) {
     png_set_tRNS_to_alpha(png);
+    has_alpha = 1;
+  } else {
+    has_alpha = !!(color_type & PNG_COLOR_MASK_ALPHA);
   }
 
   // Apply gamma correction if needed.
@@ -307,16 +310,13 @@ int ReadPNG(const uint8_t* const data, size_t data_size,
 
   if (!keep_alpha) {
     png_set_strip_alpha(png);
+    has_alpha = 0;
   }
 
   num_passes = png_set_interlace_handling(png);
   png_read_update_info(png, info);
 
-  num_channels = png_get_channels(png, info);
-  if (num_channels != 3 && num_channels != 4) {
-    goto Error;
-  }
-  stride = (int64_t)num_channels * width * sizeof(*rgb);
+  stride = (int64_t)(has_alpha ? 4 : 3) * width * sizeof(*rgb);
   if (stride != (int)stride ||
       !ImgIoUtilCheckSizeArgumentsOverflow(stride, height)) {
     goto Error;
@@ -341,8 +341,8 @@ int ReadPNG(const uint8_t* const data, size_t data_size,
 
   pic->width = (int)width;
   pic->height = (int)height;
-  ok = (num_channels == 4) ? WebPPictureImportRGBA(pic, rgb, (int)stride)
-                           : WebPPictureImportRGB(pic, rgb, (int)stride);
+  ok = has_alpha ? WebPPictureImportRGBA(pic, rgb, (int)stride)
+                 : WebPPictureImportRGB(pic, rgb, (int)stride);
 
   if (!ok) {
     goto Error;
