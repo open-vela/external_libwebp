@@ -41,7 +41,7 @@ static void SetResidualCoeffs_NEON(const int16_t* const coeffs,
       vmax_u32(vget_low_u32(eob_32x4), vget_high_u32(eob_32x4));
   eob_32x2 = vpmax_u32(eob_32x2, eob_32x2);
 
-  vst1_lane_s32(&res->last, vreinterpret_s32_u32(eob_32x2), 0);
+  vst1_lane_s32((int32_t*)&res->last, vreinterpret_s32_u32(eob_32x2), 0);
   --res->last;
 #endif  // WEBP_AARCH64
 
