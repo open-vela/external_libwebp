@@ -207,12 +207,12 @@ static THREADFN ThreadLoop(void* ptr) {
   int done = 0;
   while (!done) {
     pthread_mutex_lock(&impl->mutex_);
-    while (worker->status_ == OK) {   // wait in idling mode
+    while (worker->status_ == READY) {   // wait in idling mode
       pthread_cond_wait(&impl->condition_, &impl->mutex_);
     }
     if (worker->status_ == WORK) {
       WebPGetWorkerInterface()->Execute(worker);
-      worker->status_ = OK;
+      worker->status_ = READY;
     } else if (worker->status_ == NOT_OK) {   // finish the worker
       done = 1;
     }
@@ -236,13 +236,13 @@ static void ChangeState(WebPWorker* const worker, WebPWorkerStatus new_status) {
   if (impl == NULL) return;
 
   pthread_mutex_lock(&impl->mutex_);
-  if (worker->status_ >= OK) {
+  if (worker->status_ >= READY) {
     // wait for the worker to finish
-    while (worker->status_ != OK) {
+    while (worker->status_ != READY) {
       pthread_cond_wait(&impl->condition_, &impl->mutex_);
     }
     // assign new status and release the working thread if needed
-    if (new_status != OK) {
+    if (new_status != READY) {
       worker->status_ = new_status;
       // Note the associated mutex does not need to be held when signaling the
       // condition. Unlocking the mutex first may improve performance in some
@@ -267,16 +267,16 @@ static void Init(WebPWorker* const worker) {
 
 static int Sync(WebPWorker* const worker) {
 #ifdef WEBP_USE_THREAD
-  ChangeState(worker, OK);
+  ChangeState(worker, READY);
 #endif
-  assert(worker->status_ <= OK);
+  assert(worker->status_ <= READY);
   return !worker->had_error;
 }
 
 static int Reset(WebPWorker* const worker) {
   int ok = 1;
   worker->had_error = 0;
-  if (worker->status_ < OK) {
+  if (worker->status_ < READY) {
 #ifdef WEBP_USE_THREAD
     WebPWorkerImpl* const impl =
         (WebPWorkerImpl*)WebPSafeCalloc(1, sizeof(WebPWorkerImpl));
@@ -293,7 +293,7 @@ static int Reset(WebPWorker* const worker) {
     }
     pthread_mutex_lock(&impl->mutex_);
     ok = !pthread_create(&impl->thread_, NULL, ThreadLoop, worker);
-    if (ok) worker->status_ = OK;
+    if (ok) worker->status_ = READY;
     pthread_mutex_unlock(&impl->mutex_);
     if (!ok) {
       pthread_mutex_destroy(&impl->mutex_);
@@ -304,12 +304,12 @@ static int Reset(WebPWorker* const worker) {
       return 0;
     }
 #else
-    worker->status_ = OK;
+    worker->status_ = READY;
 #endif
-  } else if (worker->status_ > OK) {
+  } else if (worker->status_ > READY) {
     ok = Sync(worker);
   }
-  assert(!ok || (worker->status_ == OK));
+  assert(!ok || (worker->status_ == READY));
   return ok;
 }
 
