@@ -27,7 +27,7 @@ extern "C" {
 // State of the worker thread object
 typedef enum {
   NOT_OK = 0,   // object is unusable
-  OK,           // ready to work
+  READY,        // ready to work
   WORK          // busy finishing the current task
 } WebPWorkerStatus;
 

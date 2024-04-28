@@ -514,7 +514,7 @@ int VP8ProcessRow(VP8Decoder* const dec, VP8Io* const io) {
     WebPWorker* const worker = &dec->worker_;
     // Finish previous job *before* updating context
     ok &= WebPGetWorkerInterface()->Sync(worker);
-    assert(worker->status_ == OK);
+    assert(worker->status_ == READY);
     if (ok) {   // spawn a new deblocking/output job
       ctx->io_ = *io;
       ctx->id_ = dec->cache_id_;
